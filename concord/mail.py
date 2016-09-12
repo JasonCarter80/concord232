@@ -25,7 +25,7 @@ def _send_system_email(config, subject, recips, body):
     msg['Subject'] = subject
     msg['From'] = fromaddr
     msg['Date'] = email.utils.formatdate()
-    msg['Message-Id'] = email.utils.make_msgid('nx584')
+    msg['Message-Id'] = email.utils.make_msgid('concord232')
     for addr in recips:
         msg['To'] = addr
 

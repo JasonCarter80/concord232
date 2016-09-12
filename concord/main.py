@@ -4,8 +4,8 @@ import logging.handlers
 import os
 import threading
 
-from nx584 import api
-from nx584 import controller
+from concord232 import api
+from concord232 import controller
 
 LOG_FORMAT = '%(asctime)-15s %(module)s %(levelname)s %(message)s'
 
@@ -20,9 +20,6 @@ def main():
     parser.add_argument('--log', default=None,
                         metavar='FILE',
                         help='Path to log file')
-    parser.add_argument('--connect', default=None,
-                        metavar='HOST:PORT',
-                        help='Host and port to connect for serial stream')
     parser.add_argument('--serial', default=None,
                         metavar='PORT',
                         help='Serial port to open for stream')
@@ -68,15 +65,10 @@ def main():
     LOG.info('Ready')
     logging.getLogger('connectionpool').setLevel(logging.WARNING)
 
-    if args.connect:
-        host, port = args.connect.split(':')
-        ctrl = controller.NXController((host, int(port)),
-                                       args.config)
-    elif args.serial:
-        ctrl = controller.NXController((args.serial, args.baudrate),
-                                       args.config)
+    if args.serial:
+        ctrl = controller.ConController((args.serial, args.baudrate),args.config)
     else:
-        LOG.error('Either host:port or serial and baudrate are required')
+        LOG.error('Serial and baudrate are required')
         return
 
     api.CONTROLLER = ctrl

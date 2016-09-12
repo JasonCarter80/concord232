@@ -10,9 +10,9 @@ import time
 
 import stevedore.extension
 
-from nx584 import event_queue
-from nx584 import mail
-from nx584 import model
+from concord232 import event_queue
+from concord232 import mail
+from concord232 import model
 
 
 LOG = logging.getLogger('controller')
@@ -57,7 +57,7 @@ def fletcher(data, k=16):
     return sum1, sum2
 
 
-class NXFrame(object):
+class ConFrame(object):
     def __init__(self):
         self.length = 0
         self.msgtype = 0
@@ -89,74 +89,7 @@ class ConnectionLost(Exception):
     pass
 
 
-class SocketWrapper(object):
-    def __init__(self, portspec):
-        self._portspec = portspec
-        self.connect()
-
-    def _connect(self):
-        try:
-            self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._s.connect(self._portspec)
-            self._s.settimeout(0.5)
-            return True
-        except (socket.error, OSError) as ex:
-            LOG.error('Failed to connect: %s' % ex)
-            self._s = None
-            return False
-
-    def connect(self):
-        while True:
-            connected = self._connect()
-            if connected:
-                LOG.info('Connected')
-                return True
-            time.sleep(5)
-
-    def write(self, buf):
-        try:
-            self._s.send(buf)
-        except (socket.error, OSError):
-            if self.connect():
-                self._s.send(buf)
-            else:
-                LOG.error('Failed to send %r' % buf)
-
-    def _readline(self):
-        try:
-            while True:
-                c = self._s.recv(1).decode()
-                if c == '\n':
-                    break
-                if c == '':
-                    raise ConnectionLost()
-                LOG.warning('Seeking (discarded %s %02x)' % (c, ord(c)))
-        except socket.timeout:
-            return ''
-
-        start = time.time()
-        line = ''
-        while not line.endswith('\r'):
-            c = self._s.recv(1).decode()
-            if c is None:
-                break
-            line += c
-            if time.time() - start > 60:
-                LOG.error('Timeout reading a line, killing connection')
-                self._s.close()
-        return line
-
-    def readline(self):
-        try:
-            return self._readline()
-        except (socket.error, OSError, ConnectionLost):
-            LOG.warning('Connection terminated')
-            time.sleep(10)
-            self.connect()
-            return ''
-
-
-class NXController(object):
+class ConController(object):
     def __init__(self, portspec, configfile):
         self._portspec = portspec
         self._configfile = configfile
@@ -167,8 +100,7 @@ class NXController(object):
         self.partitions = {}
         self.users = {}
         self.system = model.System()
-        ext_mgr = stevedore.extension.ExtensionManager(
-            'pynx584', invoke_on_load=True, invoke_args=(self,))
+        ext_mgr = stevedore.extension.ExtensionManager('concord232', invoke_on_load=True, invoke_args=(self,))
         self.extensions = [ext_mgr[name] for name in ext_mgr.names()]
         LOG.info('Loaded extensions %s' % ext_mgr.names())
         self._load_config()

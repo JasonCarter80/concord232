@@ -5,7 +5,7 @@ import logging
 
 LOG = logging.getLogger('api')
 CONTROLLER = None
-app = flask.Flask('nx584')
+app = flask.Flask('concord232')
 
 
 def show_zone(zone):

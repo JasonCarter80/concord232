@@ -1,12 +1,12 @@
 from setuptools import setup
 
-setup(name='pynx584',
-      version='0.3',
-      description='NX584/NX8E Interface Library and Server',
-      author='Dan Smith',
-      author_email='dsmith+nx584@danplanet.com',
-      url='http://github.com/kk7ds/pynx584',
-      packages=['nx584'],
+setup(name='cocord232',
+      version='0.1',
+      description='GE Concord 4 Interface Library and Server',
+      author='Jason Carter',
+      author_email='jason@jason-carter.net',
+      url='http://github.com/JasonCarter80/cocord232',
+      packages=['concord232'],
       install_requires=['requests', 'stevedore', 'prettytable', 'pyserial', 'flask'],
-      scripts=['nx584_server', 'nx584_client'],
+      scripts=['cocord_server', 'concord_client'],
   )

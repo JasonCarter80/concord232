@@ -297,7 +297,7 @@ class User(object):
         self.authorized_partitions = []
 
 
-class NX584Extension(object):
+class concord232Extension(object):
     def __init__(self, controller):
         self._controller = controller
 
