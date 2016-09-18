@@ -1,5 +1,5 @@
 #!/usr/bin/python
 
-from nx584 import main
+from concord232 import main
 
 main.main()

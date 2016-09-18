@@ -4,7 +4,7 @@ import argparse
 import pprint
 import prettytable
 
-from nx584 import client
+from concord232 import client
 
 
 def parse_args():

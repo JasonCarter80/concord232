@@ -5,7 +5,7 @@ import os
 import threading
 
 from concord232 import api
-from concord232 import controller
+from concord232 import concord
 
 LOG_FORMAT = '%(asctime)-15s %(module)s %(levelname)s %(message)s'
 
@@ -23,9 +23,6 @@ def main():
     parser.add_argument('--serial', default=None,
                         metavar='PORT',
                         help='Serial port to open for stream')
-    parser.add_argument('--baudrate', default=38400, type=int,
-                        metavar='BAUD',
-                        help='Serial baudrate')
     parser.add_argument('--listen', default='127.0.0.1',
                         metavar='ADDR',
                         help='Listen address (defaults to 127.0.0.1)')
@@ -59,22 +56,22 @@ def main():
             maxBytes=1024*1024*10,
             backupCount=3)
         log_handler.setFormatter(formatter)
-        log_handler.setLevel(logging.INFO)
+        log_handler.setLevel(logging.DEBUG)
         LOG.addHandler(log_handler)
 
     LOG.info('Ready')
     logging.getLogger('connectionpool').setLevel(logging.WARNING)
 
     if args.serial:
-        ctrl = controller.ConController((args.serial, args.baudrate),args.config)
+        ctrl = concord.AlarmPanelInterface(args.serial, 0.25, LOG)
     else:
         LOG.error('Serial and baudrate are required')
         return
 
     api.CONTROLLER = ctrl
 
-    t = threading.Thread(target=ctrl.controller_loop)
+    t = threading.Thread(target=ctrl.message_loop)
     t.daemon = True
     t.start()
-
+    
     api.app.run(debug=False, host=args.listen, port=args.port, threaded=True)
