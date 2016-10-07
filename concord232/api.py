@@ -82,7 +82,7 @@ def index_partitions():
     try:
         if not bool(CONTROLLER.partitions):
             CONTROLLER.request_partitions();
-            
+         
         while not bool(CONTROLLER.partitions):
             time.sleep(1.0)
 
@@ -107,6 +107,8 @@ def command():
             CONTROLLER.arm_auto()
     elif args.get('cmd') == 'disarm':
         CONTROLLER.disarm(args.get('master_pin'))
+    elif args.get('cmd') == 'keys':
+        CONTROLLER.send_keys(args.get('keys'),args.get('group'))
     return flask.Response()
 
 

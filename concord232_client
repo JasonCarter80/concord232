@@ -22,6 +22,11 @@ def parse_args():
                         help='User PIN to set (or `x` to disable)')
     parser.add_argument('--host', default='localhost:5007',
                         help='Host and port (localhost:5007)')
+    parser.add_argument('--keys', default='',
+                        help='Key Presses to Send')    
+    parser.add_argument('--group', default='False',
+                        help='Group the Key Input as One Command ')    
+
     args = parser.parse_args()
     return args
 
@@ -52,13 +57,23 @@ def do_disarm(clnt, args):
         return
     clnt.disarm(args.master)
 
+def do_keys(clnt, args):
+    if args.group:
+        group = True 
+
+    if not args.keys:
+        print('Keys required')
+        return
+    clnt.send_keys(args.keys, group)
+
 
 def do_summary(clnt, args):
-    t = prettytable.PrettyTable(['Zone', 'Name', 'Bypass', 'Status'])
-    for zone in clnt.list_zones():
+    t = prettytable.PrettyTable(['Zone', 'Name', 'Bypass', 'Status','Type'])
+    for zone in sorted(clnt.list_zones(), key=lambda k: k['number']) :
         t.add_row(['%i' % zone['number'], zone['name'],
-                   zone['bypassed'] and 'bypass' or '-',
-                   '%s' % (zone['state'] or False)])
+                   zone['state'] ,
+                   '%s' % (zone['state'] or False),
+                   zone['type']])
     print(t)
 
     for i, part in enumerate(clnt.list_partitions()):
@@ -152,6 +167,8 @@ def main():
         do_arm(clnt, args)
     elif args.command == 'disarm':
         do_disarm(clnt, args)
+    elif args.command == 'keys':
+        do_keys(clnt, args)        
     elif args.command == 'partitions':
         do_list_partitions(clnt, args)
     elif args.command == 'summary':

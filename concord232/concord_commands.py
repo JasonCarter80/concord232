@@ -1,3 +1,5 @@
+import datetime
+
 """
 List of command codes and handler functions for commands sent to and
 from the alarm panel, plus code to tect mappings.
@@ -427,9 +429,24 @@ def cmd_touchpad(self,msg):
           'area_number': msg[4],
           'message_type': TOUCHPAD_MSG_TYPE.get(msg[5], 'Unknown Message Type'),
           'display_text': '',
+          'timestamp': datetime.datetime.now(),
           }
+    if d['partition_number'] > 1:
+        return
+
     if len(msg) > 0x06:
         d['display_text'] = decode_text_tokens(msg[6:-1])
+
+    if d['display_text'] == 'ENTER CODE':
+        d['action'] = 'send_the_master_code'
+
+    if d['display_text'] == 'ENTER COMMAND':
+        d['action'] = 'send_the_double_zeros'        
+    
+    if 'CHIME IS ON' in d['display_text']:
+        d['action'] = 'send_the_next_number'
+        
+    self.display_messages.append(d)
     return d
 
 def cmd_siren_sync(self,msg):
@@ -546,7 +563,7 @@ def build_cmd_equipment_list(request_type=0):
 def build_dynamic_data_refresh():
     return [ 0x02, 0x20 ]
 
-def build_keypress(keys, partition, area=0, no_check=False):
+def build_keypress(keys, partition=1, area=0, no_check=False):
     assert len(keys) < 55
     if not no_check:
         for k in keys:

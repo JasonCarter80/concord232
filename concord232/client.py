@@ -39,6 +39,14 @@ class Client(object):
                     'master_pin': master_pin})
         return r.status_code == 200
 
+    def send_keys(self, keys, group=False):
+        r = self._session.get(
+            self._url + '/command',
+            params={'cmd': 'keys',
+                    'keys': keys,
+                    'group': group})
+        return r.status_code == 200
+
     def set_bypass(self, zone, bypass):
         data = {'bypassed': bypass}
         r = self._session.put(self._url + '/zones/%i' % zone,

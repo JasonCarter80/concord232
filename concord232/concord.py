@@ -8,7 +8,7 @@ import traceback
 from concord_commands import RX_COMMANDS, \
     build_cmd_equipment_list, EQPT_LIST_REQ_TYPES, \
     build_dynamic_data_refresh, build_keypress, \
-    build_cmd_alarm_trouble
+    build_cmd_alarm_trouble, KEYPRESS_CODES
 
 from concord_helpers import ascii_hex_to_byte, total_secs
 
@@ -30,7 +30,7 @@ CTRL_CHARS = (ACK, NAK)
 # Timeout within which sender expects to receive ACKs, in seconds.
 #   inbound = message from us to panel
 #   outbound = message from panel to us
-ACK_TIMEOUT_INBOUND  = 0.5 
+ACK_TIMEOUT_INBOUND  = 1.0
 ACK_TIMEOUT_OUTBOUND = 2.0 
 MAX_RESENDS = 3
 
@@ -181,7 +181,7 @@ class SerialInterface(object):
         message-start linefeed character.
         """
         framed_msg = MSG_START + encode_message_to_ascii(msg) 
-        self.logger.debug("write_message: %r" % framed_msg)
+        #self.logger.debug("write_message: %r" % framed_msg)
         self.serdev.write(framed_msg)
 
     def write(self, data):
@@ -243,6 +243,9 @@ class AlarmPanelInterface(object):
         self.partitions = {}
         self.zones  = {}
         self.users = {}
+        self.master_pin = '0510'
+        self.last_code_attempted = 510;
+        self.display_messages = [];
         # Messages on the transmit queue are in binary format with a
         # valid checksum.
         self.tx_queue = Queue.Queue()
@@ -273,12 +276,11 @@ class AlarmPanelInterface(object):
         self.message_handlers[command_id].append(handler_fn)
 
     def ctrl_char_cb(self, cc):
-        self.logger.debug("Ctrl char %r" % cc)
+        #self.logger.debug("Ctrl char %r" % cc)
         if cc == ACK:
             if self.tx_pending is None:
                 self.logger.debug("Spurious ACK")
-            else:
-                self.logger.debug("Expected ACK")
+
             self.reset_pending_tx()
         elif cc == NAK:
             if self.tx_pending is None:
@@ -488,26 +490,63 @@ class AlarmPanelInterface(object):
         #if command_id in ['SIREN_SYNC','TOUCHPAD']:
         #    return
 
-        self.logger.debug("Handling command %s %s, %s" % \
+        if command_id in ('SIREN_SYNC','SIREN_SETUP','SIREN_GO','LIGHTS_STATE'):
+            return
+
+        if command_id not in ('TOUCHPAD'):
+            self.logger.debug("Handling command %s %s, %s" % \
                                       (cmd_str, command_id, command_parser.__name__))
         
+
         try:
             decoded_command = command_parser(self,msg)
+            if not decoded_command:
+                return
+
             decoded_command['command_id'] = command_id
+            
+            if 'action' in decoded_command:
+                try:
+                    #self.logger.info('Try to execute: %r' % decoded_command['action'])
+                    func = getattr(self, decoded_command['action'], None)
+                    if func is not None:
+                        func(decoded_command)
+                    else:
+                        self.logger.info('Counld not execute: %r' % decoded_command['action'])
+                except AttributeError as e:
+                    self.logger.info(decoded_command['action'] + ' does not exists')
+                    self.logger.info(e)
+            
             self.logger.debug(repr(decoded_command))
-#            if len(self.message_handlers[command_id]) == 0:
-#                self.logger.debug("No handlers for command %s" % command_id)
             for handler in self.message_handlers[command_id]:
                 self.logger.debug("Calling handler %r" % handler)
-                handler(self, decoded_command)
         
-#            self.logger.debug("Finished handling command %s" % command_id)
         except Exception, ex:
             self.logger.error("Problem handling command %r\n%r" % \
                                   (ex, encode_message_to_ascii(msg)))
             self.logger.error(traceback.format_exc())
 
 
+    def send_the_master_code(self, msg):
+        if self.master_pin is not None:
+            keys = []
+            for k in self.master_pin:
+                self.logger.debug("Adding Key: " + k)
+                keys.append(0x00+int(k))
+            self.send_keypress(keys)
+
+    def send_the_double_zeros(self, msg):
+        #self.logger.info("Triggered send_the_double_zeros")
+        #self.send_keys('00',True)
+	return
+
+    def send_the_next_number(self, msg):
+        #time.sleep(1)
+        #self.last_code_attempted += 1
+        #num = '8' + str(self.last_code_attempted).rjust(4, '0')
+        #self.logger.debug("Trying Next Number: %r" % num)
+        #self.send_keys(num,True)
+	return
     def send_nak(self):
         self.serial_interface.write(NAK)
     def send_ack(self):
@@ -537,9 +576,33 @@ class AlarmPanelInterface(object):
         self.enqueue_msg_for_tx(msg)
 
     def send_keypress(self, keys, partition=1, no_check=False):
-        msg = build_keypress(keys, partition, area=0, no_check=no_check)
+        msg = build_keypress(keys, partition, area=0, no_check=True)
         self.enqueue_msg_for_tx(msg)
         
+    def arm_stay(self):
+        self.send_keypress([0x21])
+
+    def send_keys(self, keys, group):
+        msg = []
+        for k in keys:
+            a = list(KEYPRESS_CODES.keys())[list(KEYPRESS_CODES.values()).index(str(k))]
+            if group:               
+                msg.append(a)
+            else:
+                self.logger.info("Sending key: %r" % msg)
+                self.send_keypress([a])        
+
+        if group:
+            self.logger.info("Sending group of keys: %r" % msg)
+            self.send_keypress(msg)    
+
+    def find_installer(self):
+        return
+        
+
+    def disarm(self,master_pin):
+        self.master_pin = master_pin
+        self.send_keypress([0x20])
         
     def inject_alarm_message(self, partition, general_type, specific_type, event_data=0):
         msg = build_cmd_alarm_trouble(partition, "System", 1,
