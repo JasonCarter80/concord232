@@ -1,16 +1,24 @@
 from datetime import datetime
-import Queue
-import serial
 import sys
 import time
 import traceback
 
-from concord_commands import RX_COMMANDS, \
+
+is_py2 = sys.version[0] == '2'
+if is_py2:
+    import Queue as Queue
+else:
+    import queue as Queue
+
+import serial
+
+
+from concord232.concord_commands import RX_COMMANDS, \
     build_cmd_equipment_list, EQPT_LIST_REQ_TYPES, \
     build_dynamic_data_refresh, build_keypress, \
     build_cmd_alarm_trouble, KEYPRESS_CODES
 
-from concord_helpers import ascii_hex_to_byte, total_secs
+from concord232.concord_helpers import ascii_hex_to_byte, total_secs
 
 CONCORD_MAX_ZONE = 6
 
@@ -93,7 +101,7 @@ class SerialInterface(object):
         return MSG_START
 
     def _read1(self):
-        c = self.serdev.read(size=1)
+        c = self.serdev.read(size=1).decode('utf-8')
         return c
 
     def _try_to_read(self, n):
@@ -182,7 +190,8 @@ class SerialInterface(object):
         """
         framed_msg = MSG_START + encode_message_to_ascii(msg) 
         #self.logger.debug("write_message: %r" % framed_msg)
-        self.serdev.write(framed_msg)
+        self.serdev.write(framed_msg.encode())
+        
 
     def write(self, data):
         """ Write raw *data* to the serial port. """
@@ -243,8 +252,8 @@ class AlarmPanelInterface(object):
         self.partitions = {}
         self.zones  = {}
         self.users = {}
-        self.master_pin = '0510'
-        self.last_code_attempted = 510;
+        self.master_pin = '0520'
+     
         self.display_messages = [];
         # Messages on the transmit queue are in binary format with a
         # valid checksum.
@@ -259,7 +268,7 @@ class AlarmPanelInterface(object):
 
         self.message_handlers = { } # Command ID -> list of message handlers for that ID.
         for command_code, (command_id, command_name, parser_fn) \
-                in RX_COMMANDS.iteritems():
+                in RX_COMMANDS.items():
             self.message_handlers[command_id] = [ ]
         
 
@@ -356,15 +365,13 @@ class AlarmPanelInterface(object):
 
     def message_loop(self):
         self.logger.debug("Message Loop Starting")        
-        #self.request_all_equipment();
-        #self.logger.debug("Requesting all eqiupment")        
-        #self.request_paritions();
-        #self.request_zones();        
-        #self.logger.debug("Requesting all Zones")        
+        #self.request_partitions();
+        #time.sleep(1)
+        self.request_zones();        
+        #time.sleep(1)
         #self.request_users();
-        #self.logger.debug("Requesting all Users")                
-        #self.request_dynamic_data_refresh();
-        #self.logger.debug("Requesting initial state")        
+        #time.sleep(1)
+        self.request_dynamic_data_refresh();
         loop_start_at = datetime.now()
         loop_last_print_at = datetime.now()
 
@@ -404,7 +411,7 @@ class AlarmPanelInterface(object):
                 try:
                     msg = self.serial_interface.read_next_message()
                     #self.logger.debug(msg)
-                except CommException, ex:
+                except CommException as ex:
                     self.send_nak()
                     self.logger.error(repr(ex))
                     continue
@@ -521,7 +528,7 @@ class AlarmPanelInterface(object):
             for handler in self.message_handlers[command_id]:
                 self.logger.debug("Calling handler %r" % handler)
         
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error("Problem handling command %r\n%r" % \
                                   (ex, encode_message_to_ascii(msg)))
             self.logger.error(traceback.format_exc())
@@ -535,22 +542,11 @@ class AlarmPanelInterface(object):
                 keys.append(0x00+int(k))
             self.send_keypress(keys)
 
-    def send_the_double_zeros(self, msg):
-        #self.logger.info("Triggered send_the_double_zeros")
-        #self.send_keys('00',True)
-	return
+    def send_nak(self):       
+        self.serial_interface.write(NAK.encode())
 
-    def send_the_next_number(self, msg):
-        #time.sleep(1)
-        #self.last_code_attempted += 1
-        #num = '8' + str(self.last_code_attempted).rjust(4, '0')
-        #self.logger.debug("Trying Next Number: %r" % num)
-        #self.send_keys(num,True)
-	return
-    def send_nak(self):
-        self.serial_interface.write(NAK)
     def send_ack(self):
-        self.serial_interface.write(ACK)
+        self.serial_interface.write(ACK.encode())
 
     def request_all_equipment(self):
         msg = build_cmd_equipment_list(request_type=0)
@@ -595,10 +591,7 @@ class AlarmPanelInterface(object):
         if group:
             self.logger.info("Sending group of keys: %r" % msg)
             self.send_keypress(msg)    
-
-    def find_installer(self):
-        return
-        
+       
 
     def disarm(self,master_pin):
         self.master_pin = master_pin

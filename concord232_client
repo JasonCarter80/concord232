@@ -18,8 +18,6 @@ def parse_args():
                         help='User number for user-related commands')
     parser.add_argument('--master', default=None,
                         help='Master PIN for commands that require it')
-    parser.add_argument('--pin', default=None,
-                        help='User PIN to set (or `x` to disable)')
     parser.add_argument('--host', default='localhost:5007',
                         help='Host and port (localhost:5007)')
     parser.add_argument('--keys', default='',
@@ -76,18 +74,13 @@ def do_summary(clnt, args):
                    zone['type']])
     print(t)
 
+    t = prettytable.PrettyTable(['Partition', 'Zones', 'Status','Level'])
     for i, part in enumerate(clnt.list_partitions()):
-        status = 'Partition %i %s' % (part['number'],
-                                      part['armed'] and 'armed' or 'disarmed')
-        if part['armed'] or i == 0:
-            print(status)
-
-
-def do_bypass(clnt, args):
-    if args.command == 'bypass':
-        clnt.set_bypass(args.zone, True)
-    elif args.command == 'unbypass':
-        clnt.set_bypass(args.zone, False)
+        if part['zones'] > 0:
+            status = "Disarmed" if part['arming_level'] == "Off" else "Armed"
+            t.add_row(['%i' % part['number'], part['zones'],status,part['arming_level']])
+        
+    print(t)
 
 
 def do_show(clnt, args):
@@ -105,44 +98,6 @@ def do_show(clnt, args):
         print('No such partition `%s\'' % args.partition)
     else:
         print('Zone or Partition required')
-
-
-def do_get_user(clnt, args):
-    if not (args.user and args.master):
-        print('User number and master pin required')
-        return
-    user = clnt.get_user(args.master, args.user)
-    if user:
-        pprint.pprint(user)
-    else:
-        print('Unable to fetch user information')
-
-
-def do_user_summary(clnt, args):
-    t = prettytable.PrettyTable(['User', 'PIN', 'Master'])
-    if not (args.user and args.master):
-        print('User number (max) and master pin required')
-        return
-    for i in range(0, args.user):
-        user = clnt.get_user(args.master, i + 1)
-        t.add_row([user['number'], user['pin'],
-                   'Master / Program' in user['authority_flags']])
-    print(t)
-
-
-def do_set_user_pin(clnt, args):
-    if not (args.user and args.master and args.pin):
-        print('User number and master pin and user pin required')
-        return
-    user = {
-        'number': args.user,
-        'pin': None if args.pin.lower() == 'x' else args.pin,
-    }
-    user = clnt.put_user(args.master, user)
-    if user:
-        pprint.pprint(user)
-    else:
-        print('Unable to set user information')
 
 
 def do_events(clnt, args):
@@ -173,18 +128,8 @@ def main():
         do_list_partitions(clnt, args)
     elif args.command == 'summary':
         do_summary(clnt, args)
-    elif args.command in ['bypass', 'unbypass']:
-        do_bypass(clnt, args)
     elif args.command == 'show':
         do_show(clnt, args)
-    elif args.command == 'getuser':
-        do_get_user(clnt, args)
-    elif args.command == 'setuserpin':
-        do_set_user_pin(clnt, args)
-    elif args.command == 'users':
-        do_user_summary(clnt, args)
-    elif args.command == 'events':
-        do_events(clnt, args)
     elif args.command == 'version':
         do_version(clnt, args)
 

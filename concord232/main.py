@@ -23,9 +23,9 @@ def main():
     parser.add_argument('--serial', default=None,
                         metavar='PORT',
                         help='Serial port to open for stream')
-    parser.add_argument('--listen', default='127.0.0.1',
+    parser.add_argument('--listen', default='0.0.0.0',
                         metavar='ADDR',
-                        help='Listen address (defaults to 127.0.0.1)')
+                        help='Listen address (defaults to 0.0.0.0 (all interfaces))')
     parser.add_argument('--port', default=5007, type=int,
                         help='Listen port (defaults to 5007)')
     args = parser.parse_args()

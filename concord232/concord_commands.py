@@ -5,9 +5,9 @@ List of command codes and handler functions for commands sent to and
 from the alarm panel, plus code to tect mappings.
 """
 
-from concord_helpers import BadMessageException, ascii_hex_to_byte
-from concord_tokens import decode_text_tokens
-from concord_alarm_codes import ALARM_CODES
+from concord232.concord_helpers import BadMessageException, ascii_hex_to_byte
+from concord232.concord_tokens import decode_text_tokens
+from concord232.concord_alarm_codes import ALARM_CODES
 
 STAR = 0xa
 HASH = 0xb
@@ -165,7 +165,7 @@ ALARM_SOURCE_TYPE = {
 }
 
 # Reverse map of alarm source name to type code
-ALARM_SOURCE_NAME = dict((v, k) for k, v in ALARM_SOURCE_TYPE.iteritems())
+ALARM_SOURCE_NAME = dict((v, k) for k, v in ALARM_SOURCE_TYPE.items())
 
 # Concord touchpad message types
 TOUCHPAD_MSG_TYPE = {
@@ -325,8 +325,7 @@ def cmd_zone_data(self, msg):
         d['zone_text_tokens'] = msg[9:-1]
     
     identifier = 'p' + str(d['partition_number']) + 'z' + str(d['zone_number'])
-    if  identifier not in self.zones:
-        self.zones[identifier] = d
+    self.zones[identifier] = d
     return d;
     
 def cmd_arming_level(self,msg):
@@ -353,6 +352,13 @@ def cmd_arming_level(self,msg):
     d['user_info'] = user_num
     d['arming_level'] = ARMING_LEVELS.get(msg[7], 'Unknown Arming Level')
     d['arming_level_code'] = msg[7]
+
+    if  d['partition_number'] in self.partitions:
+        rd = self.partitions[d['partition_number']] 
+        rd['user_info'] = user_num
+        rd['arming_level'] = ARMING_LEVELS.get(msg[7], 'Unknown Arming Level')
+        rd['arming_level_code'] = msg[7]
+        self.partitions[d['partition_number']] = rd
 
     return d
 
@@ -436,16 +442,7 @@ def cmd_touchpad(self,msg):
 
     if len(msg) > 0x06:
         d['display_text'] = decode_text_tokens(msg[6:-1])
-
-    if d['display_text'] == 'ENTER CODE':
-        d['action'] = 'send_the_master_code'
-
-    if d['display_text'] == 'ENTER COMMAND':
-        d['action'] = 'send_the_double_zeros'        
-    
-    if 'CHIME IS ON' in d['display_text']:
-        d['action'] = 'send_the_next_number'
-        
+       
     self.display_messages.append(d)
     return d
 
@@ -467,6 +464,15 @@ def cmd_partition_data(self,msg):
     
     if  d['partition_number'] not in self.zones:
         self.partitions[d['partition_number']] = d        
+    else:
+        rd = self.partitions[d['partition_number']]
+        rd['partition_number'] = msg[2]
+        rd['area_number'] =  msg[3]
+        rd['arming_level' ] =  ARM_LEVEL.get(msg[4], 'Unknown Arming Level')
+        rd['arming_level_code'] = msg[4]
+        rd['partition_text'] = ''
+        self.partitions[d['partition_number']] = rd 
+   
     return d
 
 def bcd_decode(chars):
