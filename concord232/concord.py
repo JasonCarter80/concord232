@@ -578,6 +578,9 @@ class AlarmPanelInterface(object):
     def arm_stay(self):
         self.send_keypress([0x21])
 
+    def arm_stay_silent(self):
+        self.send_keypress([0x05, 0x21])
+
     def send_keys(self, keys, group):
         msg = []
         for k in keys:

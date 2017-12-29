@@ -42,6 +42,8 @@ def do_list_partitions(clnt, args):
 def do_arm(clnt, args):
     if args.command == 'arm-stay':
         mode = 'stay'
+    elif args.command == 'arm-stay-silent':
+        mode = 'stay-silent'
     elif args.command == 'arm-exit':
         mode = 'exit'
     else:
