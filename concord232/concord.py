@@ -229,7 +229,7 @@ def encode_message_to_ascii(bin_msg):
     s = ''
     for b in bin_msg:
         s += '%02x' % b
-    return s
+    return s.upper()
 
 def decode_message_from_ascii(ascii_msg):
     n = len(ascii_msg)
