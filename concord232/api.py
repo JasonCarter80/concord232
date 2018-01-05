@@ -89,6 +89,8 @@ def command():
     if args.get('cmd') == 'arm':
         if args.get('type') == 'stay':
             CONTROLLER.arm_stay()
+        elif args.get('type') == 'stay-silent':
+            CONTROLLER.arm_stay_silent()
         elif args.get('type') == 'exit':
             CONTROLLER.arm_exit()
         else:

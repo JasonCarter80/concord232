@@ -229,7 +229,7 @@ def encode_message_to_ascii(bin_msg):
     s = ''
     for b in bin_msg:
         s += '%02x' % b
-    return s
+    return s.upper()
 
 def decode_message_from_ascii(ascii_msg):
     n = len(ascii_msg)
@@ -577,6 +577,9 @@ class AlarmPanelInterface(object):
         
     def arm_stay(self):
         self.send_keypress([0x21])
+
+    def arm_stay_silent(self):
+        self.send_keypress([0x05, 0x21])
 
     def send_keys(self, keys, group):
         msg = []

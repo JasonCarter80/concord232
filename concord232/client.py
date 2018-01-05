@@ -24,7 +24,7 @@ class Client(object):
             return r.json()['partitions']
 
     def arm(self, armtype='auto'):
-        if armtype not in ['stay', 'exit', 'auto']:
+        if armtype not in ['stay', 'stay-silent', 'exit', 'auto']:
             raise Exception('Invalid arm type')
         r = self._session.get(
             self._url + '/command',
