@@ -36,29 +36,29 @@ Once that is running, you should be able to do something like this::
 
 ## Basic arming and disarming
 
-#### Arm to stay (level 2)
+Arm to stay (level 2)
 ```
 $ concord232_client arm-stay
 ```
 
-#### Arm to away (level 3)
+Arm to away (level 3)
 ```
 $ concord232_client arm-away
 ```
 
-#### Disarm
+Disarm
 ```
 $ concord232_client disarm --master 1234
 ```
 
-## Arming options
+## Arming with options
 
-#### Arm to stay silently
+Arm to stay silently
 ```
 $ concord232_client arm-stay-silent
 ```
 
-#### Arm to stay without delay
+Arm to stay without delay
 ```
 $ concord232_client arm-stay-immediate
 ```
