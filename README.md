@@ -34,22 +34,33 @@ Once that is running, you should be able to do something like this::
  +------+-----------------+--------+--------+
 ```
 
- # Arm for stay with auto-bypass
- ```
+## Basic arming and disarming
+
+### Arm to stay (level 2)
+```
 $ concord232_client arm-stay
 ```
 
- # Arm for exit (requires tripping an entry zone)
- ```
-$ concord232_client arm-exit
+### Arm to away (level 3)
 ```
- # Auto-arm (no bypass, no entry zone trip required)
- ```
-$ concord232_client arm-auto
+$ concord232_client arm-away
 ```
- # Disarm
- ````
+
+### Disarm
+```
 $ concord232_client disarm --master 1234
+```
+
+## Arming options
+
+### Arm to stay silently
+```
+$ concord232_client arm-stay-silent
+```
+
+### Arm to stay without delay
+```
+$ concord232_client arm-stay-immediate
 ```
 
 ## Home Assistant
