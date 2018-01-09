@@ -87,14 +87,11 @@ def index_partitions():
 def command():
     args = flask.request.args
     if args.get('cmd') == 'arm':
-        if args.get('type') == 'stay':
-            CONTROLLER.arm_stay()
-        elif args.get('type') == 'stay-silent':
-            CONTROLLER.arm_stay_silent()
-        elif args.get('type') == 'exit':
-            CONTROLLER.arm_exit()
-        else:
-            CONTROLLER.arm_auto()
+        option = args.get('option')
+        if args.get('level') == 'stay':
+            CONTROLLER.arm_stay(option)
+        elif args.get('level') == 'away':
+            CONTROLLER.arm_away(option)
     elif args.get('cmd') == 'disarm':
         CONTROLLER.disarm(args.get('master_pin'))
     elif args.get('cmd') == 'keys':

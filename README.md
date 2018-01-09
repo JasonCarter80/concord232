@@ -58,9 +58,9 @@ Arm to stay silently
 $ concord232_client arm-stay-silent
 ```
 
-Arm to stay without delay
+Arm to away without delay
 ```
-$ concord232_client arm-stay-immediate
+$ concord232_client arm-away-instant
 ```
 
 ## Home Assistant
