@@ -53,14 +53,22 @@ $ concord232_client disarm --master 1234
 
 ## Arming with options
 
-Arm to stay silently
+Both stay (level 2) and away (level 3) alarms can take one of two
+options: silent arming, or instant arming.  Silent arming will not
+beep while the alarm is setting.  Instant arming has no delay.
+Clearly, this should only be used with away arming if you are already
+outside.
+
+Examples:
+
+Arm to stay with no delay
 ```
-$ concord232_client arm-stay-silent
+$ concord232_client arm-stay-instant
 ```
 
-Arm to away without delay
+Arm to away without beeps
 ```
-$ concord232_client arm-away-instant
+$ concord232_client arm-away-silent
 ```
 
 ## Home Assistant
