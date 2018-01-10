@@ -34,22 +34,41 @@ Once that is running, you should be able to do something like this::
  +------+-----------------+--------+--------+
 ```
 
- # Arm for stay with auto-bypass
- ```
+## Basic arming and disarming
+
+Arm to stay (level 2)
+```
 $ concord232_client arm-stay
 ```
 
- # Arm for exit (requires tripping an entry zone)
- ```
-$ concord232_client arm-exit
+Arm to away (level 3)
 ```
- # Auto-arm (no bypass, no entry zone trip required)
- ```
-$ concord232_client arm-auto
+$ concord232_client arm-away
 ```
- # Disarm
- ````
+
+Disarm
+```
 $ concord232_client disarm --master 1234
+```
+
+## Arming with options
+
+Both stay (level 2) and away (level 3) alarms can take one of two
+options: silent arming, or instant arming.  Silent arming will not
+beep while the alarm is setting.  Instant arming has no delay.
+Clearly, this should only be used with away arming if you are already
+outside.
+
+Examples:
+
+Arm to stay with no delay
+```
+$ concord232_client arm-stay-instant
+```
+
+Arm to away without beeps
+```
+$ concord232_client arm-away-silent
 ```
 
 ## Home Assistant

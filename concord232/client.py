@@ -23,13 +23,12 @@ class Client(object):
         except TypeError:
             return r.json()['partitions']
 
-    def arm(self, armtype='auto'):
-        if armtype not in ['stay', 'stay-silent', 'exit', 'auto']:
-            raise Exception('Invalid arm type')
+    def arm(self, level, option):
         r = self._session.get(
             self._url + '/command',
             params={'cmd': 'arm',
-                    'type': armtype})
+                    'level': level,
+                    'option': option})
         return r.status_code == 200
 
     def disarm(self, master_pin):
