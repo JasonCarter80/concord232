@@ -577,19 +577,19 @@ class AlarmPanelInterface(object):
         
     def arm_stay(self,option):
         if option == None:
-            self.send_keypress([0x21])
+            self.send_keypress([0x02])
         elif option == 'silent':
-            self.send_keypress([0x05, 0x21])
+            self.send_keypress([0x05, 0x02])
         elif option == 'instant':
-            self.send_keypress([0x21, 0x04])
+            self.send_keypress([0x02, 0x04])
 
     def arm_away(self,option):
         if option == None:
-            self.send_keypress([0x27])
+            self.send_keypress([0x03])
         elif option == 'silent':
-            self.send_keypress([0x05, 0x27])
+            self.send_keypress([0x05, 0x03])
         elif option == 'instant':
-            self.send_keypress([0x27, 0x04])
+            self.send_keypress([0x03, 0x04])
 
     def send_keys(self, keys, group):
         msg = []
