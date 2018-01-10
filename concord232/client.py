@@ -23,7 +23,7 @@ class Client(object):
         except TypeError:
             return r.json()['partitions']
 
-    def arm(self, level, option):
+    def arm(self, level, option = None):
         r = self._session.get(
             self._url + '/command',
             params={'cmd': 'arm',

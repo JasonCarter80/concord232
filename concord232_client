@@ -39,7 +39,7 @@ def do_list_partitions(clnt, args):
         pprint.pprint(part)
 
 
-def do_arm(clnt, level, option):
+def do_arm(clnt, level, option = None):
     clnt.arm(level, option)
 
 def do_disarm(clnt, args):
@@ -117,7 +117,7 @@ def main():
             do_arm(clnt, level, option)
         else:
             cmd, level = args.command.split('-')
-            do_arm(clnt, level, None)
+            do_arm(clnt, level)
     elif args.command == 'disarm':
         do_disarm(clnt, args)
     elif args.command == 'keys':
