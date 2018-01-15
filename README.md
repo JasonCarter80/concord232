@@ -6,7 +6,7 @@ the RS232 Automation module.
 
 The goal of this project was to utilize my GE Concord 4 alarm panel with [Home Assistant](https://home-assistant.io/)
 
-Following the framework of [kk7ds](https://github.com/kk7ds/pynx584) to integrate the nx584 into Home Assistant, and [douglasdecouto](https://github.com/douglasdecouto/py-concord)'s' work into building the base communication class as part of their integration into the Indigo platform, we now have a working Interlogix/GE Concord 4 Automation Module interface
+Following the framework of [kk7ds](https://github.com/kk7ds/pynx584) to integrate the nx584 into Home Assistant, and [douglasdecouto](https://github.com/douglasdecouto/py-concord)'s work into building the base communication class as part of their integration into the Indigo platform, we now have a working Interlogix/GE Concord 4 Automation Module interface
 
 To install::
 
