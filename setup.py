@@ -7,6 +7,8 @@ setup(
     author='Jason Carter',
     author_email='jason@jason-carter.net',
     url='http://github.com/JasonCarter80/concord232',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     packages=['concord232'],
     install_requires=['requests', 'stevedore', 'prettytable', 'pyserial', 'flask'],
     scripts=['concord232_server', 'concord232_client'],
